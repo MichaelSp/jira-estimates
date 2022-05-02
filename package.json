@@ -15,12 +15,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/typescript-action.git"
+    "url": "git+https://github.com/MichaelSp/jira-estimates.git"
   },
   "keywords": [
     "actions",
-    "node",
-    "setup"
+    "github",
+    "jira",
+    "estimate",
+    "story points"
   ],
   "author": "",
   "license": "MIT",

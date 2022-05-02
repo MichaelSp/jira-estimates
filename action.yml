@@ -1,11 +1,19 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'jira-estimate'
+description: 'Manage estimates in jira using issue labels'
+author: 'Michael Sprauer'
 inputs:
-  milliseconds: # change this
+  jira-url:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'URL to your jira instance. Example: https://jira.at.your.company'
+  jira-username:
+    description: "Username for jira access"
+    required: true
+  jira-password:
+    description: "Password/Token for jira access"
+    required: true
+  string:
+    required: false
+    description: The string that will be searched for as an jira issue. If not defined the issue/PR comment will be searched for auto-links.
 runs:
   using: 'node16'
   main: 'dist/index.js'

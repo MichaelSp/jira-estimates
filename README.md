@@ -7,11 +7,30 @@ It will either use the `string` input or the content of the issue to search for 
 ## Usage
 
 ```yaml
-uses: MichaelSp/jira-estimates@v1
-with:
-  jira-url: https://jira.at.your.company
-  jira-username: ${{ secret.JIRA_USERNAME }}
-  jira-password: ${{ secret.JIRA_PASSWORD }}
-env:
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+on:
+  issues:
+    - opened
+    - edited
+    - deleted
+    - labeled
+    - unlabeled
+    
+  pull_request:
+    - labeled
+    - unlabeled
+    - opened
+    - edited
+
+jobs:
+  check-dist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: MichaelSp/jira-estimates@v1
+        with:
+          jira-url: https://jira.at.your.company
+          jira-username: ${{ secret.JIRA_USERNAME }}
+          jira-password: ${{ secret.JIRA_PASSWORD }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

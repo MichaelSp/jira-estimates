@@ -6,9 +6,6 @@ import {AutoLink} from './types'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
     const token = process.env['GITHUB_TOKEN']
     if (!token) {
       core.setFailed('GITHUB_TOKEN is required!')

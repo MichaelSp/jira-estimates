@@ -148,20 +148,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const github_1 = __importDefault(__nccwpck_require__(5438));
+const github_1 = __nccwpck_require__(5438);
 const jira_client_1 = __importDefault(__nccwpck_require__(6411));
 const estimate_1 = __nccwpck_require__(4115);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
             const token = process.env['GITHUB_TOKEN'];
             if (!token) {
                 core.setFailed('GITHUB_TOKEN is required!');
                 return;
             }
-            const octokit = github_1.default.getOctokit(token);
+            const octokit = (0, github_1.getOctokit)(token);
             const jiraUrl = new URL(core.getInput('jira-url'));
             const jiraPassword = core.getInput('jira-username');
             const jiraUsername = core.getInput('jira-password');
@@ -173,8 +171,8 @@ function run() {
                 return;
             }
             const autolinks = (yield octokit.rest.repos.listAutolinks({
-                owner: github_1.default.context.repo.owner,
-                repo: github_1.default.context.repo.repo
+                owner: github_1.context.repo.owner,
+                repo: github_1.context.repo.repo
             })).data;
             const jiraConfig = {
                 protocol: jiraUrl.protocol,

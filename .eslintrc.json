@@ -59,6 +59,9 @@
         "jest/globals": true,
         "jest": true
       },
+      "parserOptions": {
+        "project": "./tsconfig.test.json"
+      },
       "rules": {
         "no-console": "off"
       }

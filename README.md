@@ -25,7 +25,7 @@ on:
     - edited
 
 jobs:
-  check-dist:
+  sync-estimates:
     runs-on: ubuntu-latest
 
     steps:

@@ -38,20 +38,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.updateEstimates = exports.findIssueKeyIn = exports.loadEstimate = exports.loadIssue = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const github_1 = __importDefault(__nccwpck_require__(5438));
 const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g;
-function loadIssue(octokit) {
+function loadIssue(octokit, context) {
     return __awaiter(this, void 0, void 0, function* () {
         const issue = yield octokit.rest.issues.get({
-            owner: github_1.default.context.repo.owner,
-            repo: github_1.default.context.repo.repo,
-            issue_number: github_1.default.context.issue.number
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number
         });
         return issue;
     });
@@ -172,7 +168,7 @@ function run() {
             const jiraPassword = core.getInput('jira-username');
             const jiraUsername = core.getInput('jira-password');
             let string = core.getInput('string');
-            const issue = yield (0, estimate_1.loadIssue)(octokit);
+            const issue = yield (0, estimate_1.loadIssue)(octokit, github.context);
             core.debug(`Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(issue.data.labels)}`);
             const estimate = yield (0, estimate_1.loadEstimate)(issue);
             if (estimate === 0) {

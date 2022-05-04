@@ -1,17 +1,18 @@
 import * as core from '@actions/core'
-import github from '@actions/github'
-import {GitHub} from '@actions/github/lib/utils'
 import {EstimateContext, Issue, LabelInterface} from './types'
+import {GitHub} from '@actions/github/lib/utils'
+import * as Context from '@actions/github/lib/context'
 
 const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g
 
 export async function loadIssue(
-  octokit: InstanceType<typeof GitHub>
+  octokit: InstanceType<typeof GitHub>,
+  context: Context.Context
 ): Promise<Issue> {
   const issue = await octokit.rest.issues.get({
-    owner: github.context.repo.owner,
-    repo: github.context.repo.repo,
-    issue_number: github.context.issue.number
+    owner: context.repo.owner,
+    repo: context.repo.repo,
+    issue_number: context.issue.number
   })
   return issue as Issue
 }

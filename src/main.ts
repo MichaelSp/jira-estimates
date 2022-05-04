@@ -27,7 +27,7 @@ async function run(): Promise<void> {
     const jiraUsername = core.getInput('jira-password')
     let string: string | undefined = core.getInput('string')
 
-    const issue = await loadIssue(octokit)
+    const issue = await loadIssue(octokit, github.context)
     core.debug(
       `Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(
         issue.data.labels

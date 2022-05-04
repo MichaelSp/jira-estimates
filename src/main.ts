@@ -53,8 +53,7 @@ async function run(): Promise<void> {
       protocol: jiraUrl.protocol,
       host: jiraUrl.host,
       port: jiraUrl.port,
-      username: jiraPassword,
-      password: jiraUsername,
+      username: jiraUsername,
       apiVersion: '2',
       strictSSL: true
     }
@@ -65,8 +64,9 @@ async function run(): Promise<void> {
       )
       return
     }
+    core.debug(`Jira config: ${jiraConfig}`)
     await updateEstimates({
-      jira: new JiraApi(jiraConfig),
+      jira: new JiraApi({...jiraConfig, password: jiraPassword}),
       string,
       estimate,
       autolinks

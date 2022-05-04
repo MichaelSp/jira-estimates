@@ -35,9 +35,11 @@ export async function findIssueKeyIn(
   )
 
   searchPatterns.push(issueIdRegEx)
+  core.debug(`searching for ${JSON.stringify(searchPatterns)}`)
   for (const pattern of searchPatterns) {
     const match = config.string.match(pattern)
     if (match) {
+      core.debug(`found ${match[0]}`)
       return match[0]
     }
   }
@@ -51,6 +53,7 @@ export async function updateEstimates(config: EstimateContext): Promise<void> {
     return
   }
 
+  core.info(`Updating issue ${jiraIssueString} on ${config.jira}`)
   await config.jira.updateIssue(jiraIssueString, {
     update: {
       update: {

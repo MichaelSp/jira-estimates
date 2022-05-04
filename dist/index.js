@@ -67,9 +67,11 @@ function findIssueKeyIn(config) {
     return __awaiter(this, void 0, void 0, function* () {
         const searchPatterns = config.autolinks.map(autolink => new RegExp(`${autolink.key_prefix}\\d+`));
         searchPatterns.push(issueIdRegEx);
+        core.debug(`searching for ${JSON.stringify(searchPatterns)}`);
         for (const pattern of searchPatterns) {
             const match = config.string.match(pattern);
             if (match) {
+                core.debug(`found ${match[0]}`);
                 return match[0];
             }
         }
@@ -84,6 +86,7 @@ function updateEstimates(config) {
             core.info(`String does not contain issueKeys`);
             return;
         }
+        core.info(`Updating issue ${jiraIssueString} on ${config.jira}`);
         yield config.jira.updateIssue(jiraIssueString, {
             update: {
                 update: {
@@ -185,8 +188,7 @@ function run() {
                 protocol: jiraUrl.protocol,
                 host: jiraUrl.host,
                 port: jiraUrl.port,
-                username: jiraPassword,
-                password: jiraUsername,
+                username: jiraUsername,
                 apiVersion: '2',
                 strictSSL: true
             };
@@ -195,8 +197,9 @@ function run() {
                 core.setFailed('Neither "string" is defined nor issue comment could be determined.');
                 return;
             }
+            core.debug(`Jira config: ${jiraConfig}`);
             yield (0, estimate_1.updateEstimates)({
-                jira: new jira_client_1.default(jiraConfig),
+                jira: new jira_client_1.default(Object.assign(Object.assign({}, jiraConfig), { password: jiraPassword })),
                 string,
                 estimate,
                 autolinks

@@ -22,8 +22,8 @@ jobs:
     steps:
     - uses: MichaelSp/jira-estimates@test
       with:
-        jira-url: https://jira.at.your.company
-        jira-username: x
-        jira-password: y
+        jira-url: ${{ secrets.JIRA_HOST }}
+        jira-username: ${{ secrets.JIRA_USERNAME }}
+        jira-password: ${{ secrets.JIRA_PASSWORD }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

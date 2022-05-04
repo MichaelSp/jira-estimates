@@ -7,15 +7,18 @@ It will either use the `string` input or the content of the issue to search for 
 ## Usage
 
 ```yaml
+name: Jira Estimate Sync
 on:
   issues:
+    types:
     - opened
     - edited
     - deleted
     - labeled
     - unlabeled
-    
+
   pull_request:
+    types:
     - labeled
     - unlabeled
     - opened
@@ -29,8 +32,8 @@ jobs:
       - uses: MichaelSp/jira-estimates@v1
         with:
           jira-url: https://jira.at.your.company
-          jira-username: ${{ secret.JIRA_USERNAME }}
-          jira-password: ${{ secret.JIRA_PASSWORD }}
+          jira-username: ${{ secrets.JIRA_USERNAME }}
+          jira-password: ${{ secrets.JIRA_PASSWORD }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```

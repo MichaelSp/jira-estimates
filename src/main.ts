@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import github from '@actions/github'
+import {context, getOctokit} from '@actions/github'
 import JiraApi from 'jira-client'
 import {loadEstimate, loadIssue, updateEstimates} from './estimate'
 import {AutoLink} from './types'
@@ -14,7 +14,7 @@ async function run(): Promise<void> {
       core.setFailed('GITHUB_TOKEN is required!')
       return
     }
-    const octokit = github.getOctokit(token)
+    const octokit = getOctokit(token)
 
     const jiraUrl = new URL(core.getInput('jira-url'))
     const jiraPassword = core.getInput('jira-username')
@@ -31,8 +31,8 @@ async function run(): Promise<void> {
     }
     const autolinks: AutoLink[] = (
       await octokit.rest.repos.listAutolinks({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo
+        owner: context.repo.owner,
+        repo: context.repo.repo
       })
     ).data
 

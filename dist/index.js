@@ -165,15 +165,18 @@ function run() {
             const jiraUsername = core.getInput('jira-password');
             let string = core.getInput('string');
             const issue = yield (0, estimate_1.loadIssue)(octokit);
+            core.debug(`Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(issue.data.labels)}`);
             const estimate = yield (0, estimate_1.loadEstimate)(issue);
             if (estimate === 0) {
                 core.warning('No estimate label found. Only labels with just one number (\\d+) are considered estimates.');
                 return;
             }
+            core.debug(`Using estimate '${estimate}'`);
             const autolinks = (yield octokit.rest.repos.listAutolinks({
                 owner: github_1.context.repo.owner,
                 repo: github_1.context.repo.repo
             })).data;
+            core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`);
             const jiraConfig = {
                 protocol: jiraUrl.protocol,
                 host: jiraUrl.host,

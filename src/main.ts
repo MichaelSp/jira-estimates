@@ -11,6 +11,7 @@ async function run(): Promise<void> {
       core.setFailed('GITHUB_TOKEN is required!')
       return
     }
+
     const octokit = getOctokit(token)
 
     const jiraUrl = new URL(core.getInput('jira-url'))
@@ -19,6 +20,11 @@ async function run(): Promise<void> {
     let string: string | undefined = core.getInput('string')
 
     const issue = await loadIssue(octokit)
+    core.debug(
+      `Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(
+        issue.data.labels
+      )}`
+    )
     const estimate: number = await loadEstimate(issue)
     if (estimate === 0) {
       core.warning(
@@ -26,12 +32,14 @@ async function run(): Promise<void> {
       )
       return
     }
+    core.debug(`Using estimate '${estimate}'`)
     const autolinks: AutoLink[] = (
       await octokit.rest.repos.listAutolinks({
         owner: context.repo.owner,
         repo: context.repo.repo
       })
     ).data
+    core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)
 
     const jiraConfig: JiraApi.JiraApiOptions = {
       protocol: jiraUrl.protocol,

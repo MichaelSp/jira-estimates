@@ -1,5 +1,5 @@
 import * as core from '@actions/core'
-import {context, getOctokit} from '@actions/github'
+import * as github from '@actions/github'
 import JiraApi from 'jira-client'
 import {loadEstimate, loadIssue, updateEstimates} from './estimate'
 import {AutoLink} from './types'
@@ -12,7 +12,7 @@ async function run(): Promise<void> {
       return
     }
 
-    const octokit = getOctokit(token)
+    const octokit = github.getOctokit(token)
 
     const jiraUrl = new URL(core.getInput('jira-url'))
     const jiraPassword = core.getInput('jira-username')
@@ -35,8 +35,8 @@ async function run(): Promise<void> {
     core.debug(`Using estimate '${estimate}'`)
     const autolinks: AutoLink[] = (
       await octokit.rest.repos.listAutolinks({
-        owner: context.repo.owner,
-        repo: context.repo.repo
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo
       })
     ).data
     core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)

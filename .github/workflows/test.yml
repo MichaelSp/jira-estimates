@@ -15,6 +15,10 @@ on:
     - opened
     - edited
 
+permissions:
+  issues: read
+  contents: read
+
 jobs:
   sync-estimates:
     runs-on: ubuntu-latest
@@ -22,8 +26,8 @@ jobs:
     steps:
     - uses: MichaelSp/jira-estimates@test
       with:
-        jira-url: ${{ secrets.JIRA_HOST }}
-        jira-username: ${{ secrets.JIRA_USERNAME }}
-        jira-password: ${{ secrets.JIRA_PASSWORD }}
+        jira-url: https://jira.at.your.company
+        jira-username: x
+        jira-password: y
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

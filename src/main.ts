@@ -11,6 +11,14 @@ async function run(): Promise<void> {
       core.setFailed('GITHUB_TOKEN is required!')
       return
     }
+    if (!github) {
+      core.setFailed('No github')
+      return
+    }
+    if (!github.context) {
+      core.setFailed('no github.context')
+      return
+    }
 
     const octokit = github.getOctokit(token)
 

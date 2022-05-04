@@ -1,0 +1,29 @@
+name: Jira Estimate Sync
+on:
+  issues:
+    types:
+    - opened
+    - edited
+    - deleted
+    - labeled
+    - unlabeled
+
+  pull_request:
+    types:
+    - labeled
+    - unlabeled
+    - opened
+    - edited
+
+jobs:
+  sync-estimates:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: MichaelSp/jira-estimates@test
+      with:
+        jira-url: https://jira.at.your.company
+        jira-username: x
+        jira-password: y
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

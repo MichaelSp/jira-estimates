@@ -1,19 +1,25 @@
 import * as core from '@actions/core'
-import github from '@actions/github'
+import * as github from '@actions/github'
 import JiraApi from 'jira-client'
 import {loadEstimate, loadIssue, updateEstimates} from './estimate'
 import {AutoLink} from './types'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
     const token = process.env['GITHUB_TOKEN']
     if (!token) {
       core.setFailed('GITHUB_TOKEN is required!')
       return
     }
+    if (!github) {
+      core.setFailed('No github')
+      return
+    }
+    if (!github.context) {
+      core.setFailed('no github.context')
+      return
+    }
+
     const octokit = github.getOctokit(token)
 
     const jiraUrl = new URL(core.getInput('jira-url'))
@@ -21,7 +27,12 @@ async function run(): Promise<void> {
     const jiraUsername = core.getInput('jira-password')
     let string: string | undefined = core.getInput('string')
 
-    const issue = await loadIssue(octokit)
+    const issue = await loadIssue(octokit, github.context)
+    core.debug(
+      `Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(
+        issue.data.labels
+      )}`
+    )
     const estimate: number = await loadEstimate(issue)
     if (estimate === 0) {
       core.warning(
@@ -29,12 +40,14 @@ async function run(): Promise<void> {
       )
       return
     }
+    core.debug(`Using estimate '${estimate}'`)
     const autolinks: AutoLink[] = (
       await octokit.rest.repos.listAutolinks({
         owner: github.context.repo.owner,
         repo: github.context.repo.repo
       })
     ).data
+    core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)
 
     const jiraConfig: JiraApi.JiraApiOptions = {
       protocol: jiraUrl.protocol,

@@ -38,20 +38,16 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.updateEstimates = exports.findIssueKeyIn = exports.loadEstimate = exports.loadIssue = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const github_1 = __importDefault(__nccwpck_require__(5438));
 const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g;
-function loadIssue(octokit) {
+function loadIssue(octokit, context) {
     return __awaiter(this, void 0, void 0, function* () {
         const issue = yield octokit.rest.issues.get({
-            owner: github_1.default.context.repo.owner,
-            repo: github_1.default.context.repo.repo,
-            issue_number: github_1.default.context.issue.number
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number
         });
         return issue;
     });
@@ -148,34 +144,43 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const core = __importStar(__nccwpck_require__(2186));
-const github_1 = __importDefault(__nccwpck_require__(5438));
+const github = __importStar(__nccwpck_require__(5438));
 const jira_client_1 = __importDefault(__nccwpck_require__(6411));
 const estimate_1 = __nccwpck_require__(4115);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const ms = core.getInput('milliseconds');
-            core.debug(`Waiting ${ms} milliseconds ...`); // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
             const token = process.env['GITHUB_TOKEN'];
             if (!token) {
                 core.setFailed('GITHUB_TOKEN is required!');
                 return;
             }
-            const octokit = github_1.default.getOctokit(token);
+            if (!github) {
+                core.setFailed('No github');
+                return;
+            }
+            if (!github.context) {
+                core.setFailed('no github.context');
+                return;
+            }
+            const octokit = github.getOctokit(token);
             const jiraUrl = new URL(core.getInput('jira-url'));
             const jiraPassword = core.getInput('jira-username');
             const jiraUsername = core.getInput('jira-password');
             let string = core.getInput('string');
-            const issue = yield (0, estimate_1.loadIssue)(octokit);
+            const issue = yield (0, estimate_1.loadIssue)(octokit, github.context);
+            core.debug(`Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(issue.data.labels)}`);
             const estimate = yield (0, estimate_1.loadEstimate)(issue);
             if (estimate === 0) {
                 core.warning('No estimate label found. Only labels with just one number (\\d+) are considered estimates.');
                 return;
             }
+            core.debug(`Using estimate '${estimate}'`);
             const autolinks = (yield octokit.rest.repos.listAutolinks({
-                owner: github_1.default.context.repo.owner,
-                repo: github_1.default.context.repo.repo
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo
             })).data;
+            core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`);
             const jiraConfig = {
                 protocol: jiraUrl.protocol,
                 host: jiraUrl.host,

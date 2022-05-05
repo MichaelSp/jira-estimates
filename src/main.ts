@@ -3,6 +3,7 @@ import * as github from '@actions/github'
 import JiraApi from 'jira-client'
 import {
   findIssueKeyIn,
+  getGithubClient,
   loadAutolinks,
   loadEstimate,
   loadGHIssue,
@@ -12,22 +13,6 @@ import {EstimateContext} from './types'
 
 async function run(): Promise<void> {
   try {
-    const token = process.env['GITHUB_TOKEN']
-    if (!token) {
-      core.setFailed('GITHUB_TOKEN is required!')
-      return
-    }
-    if (!github) {
-      core.setFailed('No github')
-      return
-    }
-    if (!github.context) {
-      core.setFailed('no github.context')
-      return
-    }
-
-    const octokit = github.getOctokit(token)
-
     const jiraUrl = new URL(core.getInput('jira-url'))
     const jiraPassword = core.getInput('jira-username')
     const jiraUsername = core.getInput('jira-password')
@@ -43,6 +28,7 @@ async function run(): Promise<void> {
       strictSSL: true
     }
 
+    const octokit = getGithubClient()
     const config: EstimateContext = {
       octokit,
       github: github.context,
@@ -55,12 +41,6 @@ async function run(): Promise<void> {
 
     config.ghIssue = await loadGHIssue(config)
     config.estimate = await loadEstimate(config)
-    if (config.estimate === 0) {
-      core.warning(
-        'No estimate label found or estimation is "0". Only labels with just one number (\\d+) > 0 are considered estimates.'
-      )
-      return
-    }
     core.debug(`Using estimate '${config.estimate}'`)
 
     if (!config.string || config.string === '') {
@@ -68,6 +48,7 @@ async function run(): Promise<void> {
     }
     config.jiraIssue = await findIssueKeyIn(config)
     await updateEstimates(config)
+    core.info(`Updated ${jiraUrl}/projects/`)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

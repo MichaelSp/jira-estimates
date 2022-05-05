@@ -39,9 +39,17 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateEstimates = exports.loadAutolinks = exports.findIssueKeyIn = exports.loadEstimate = exports.loadGHIssue = void 0;
+exports.updateEstimates = exports.loadAutolinks = exports.findIssueKeyIn = exports.loadEstimate = exports.loadGHIssue = exports.getGithubClient = void 0;
 const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
+function getGithubClient() {
+    const token = process.env['GITHUB_TOKEN'];
+    if (!token) {
+        throw new Error('GITHUB_TOKEN is required!');
+    }
+    return github.getOctokit(token);
+}
+exports.getGithubClient = getGithubClient;
 function loadGHIssue(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
         const issue = yield ctx.octokit.rest.issues.get({
@@ -56,15 +64,21 @@ exports.loadGHIssue = loadGHIssue;
 function loadEstimate(context) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
+        let estimate = 0;
         if (context.ghIssue) {
             core.debug(`Loaded GH issue ${context.ghIssue.data.body}\n\n with labels: ${JSON.stringify(context.ghIssue.data.labels)}`);
             const labels = typeof context.ghIssue.data.labels == 'string'
                 ? [{ name: context.ghIssue.data.labels }]
                 : context.ghIssue.data.labels || [];
-            return Number.parseInt(((_a = labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.match(/\d+/); })) === null || _a === void 0 ? void 0 : _a.name) || '0');
+            estimate = Number.parseInt(((_a = labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.match(/\d+/); })) === null || _a === void 0 ? void 0 : _a.name) || '0');
         }
-        else
-            return 0;
+        else {
+            estimate = 0;
+        }
+        if (estimate === 0) {
+            core.warning('No estimate label found or estimation is "0". Only labels with just one number (\\d+) > 0 are considered estimates.');
+        }
+        return estimate;
     });
 }
 exports.loadEstimate = loadEstimate;
@@ -113,8 +127,8 @@ function updateEstimates(config) {
             core.setFailed("Jira issue couldn't be determined");
             return;
         }
-        core.info(`Updating issue ${config.jiraIssue} on ${config.jira}`);
-        yield config.jira.updateIssue(config.jiraIssue, {
+        core.info(`Updating issue ${config.jiraIssue}`);
+        const response = yield config.jira.updateIssue(config.jiraIssue, {
             update: {
                 update: {
                     'Story Points': [
@@ -125,6 +139,7 @@ function updateEstimates(config) {
                 }
             }
         });
+        return response;
     });
 }
 exports.updateEstimates = updateEstimates;
@@ -180,20 +195,6 @@ const estimate_1 = __nccwpck_require__(4115);
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const token = process.env['GITHUB_TOKEN'];
-            if (!token) {
-                core.setFailed('GITHUB_TOKEN is required!');
-                return;
-            }
-            if (!github) {
-                core.setFailed('No github');
-                return;
-            }
-            if (!github.context) {
-                core.setFailed('no github.context');
-                return;
-            }
-            const octokit = github.getOctokit(token);
             const jiraUrl = new URL(core.getInput('jira-url'));
             const jiraPassword = core.getInput('jira-username');
             const jiraUsername = core.getInput('jira-password');
@@ -207,6 +208,7 @@ function run() {
                 apiVersion: '2',
                 strictSSL: true
             };
+            const octokit = (0, estimate_1.getGithubClient)();
             const config = {
                 octokit,
                 github: github.context,
@@ -218,16 +220,13 @@ function run() {
             core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`);
             config.ghIssue = yield (0, estimate_1.loadGHIssue)(config);
             config.estimate = yield (0, estimate_1.loadEstimate)(config);
-            if (config.estimate === 0) {
-                core.warning('No estimate label found or estimation is "0". Only labels with just one number (\\d+) > 0 are considered estimates.');
-                return;
-            }
             core.debug(`Using estimate '${config.estimate}'`);
             if (!config.string || config.string === '') {
                 config.string = config.ghIssue.data.body || '';
             }
             config.jiraIssue = yield (0, estimate_1.findIssueKeyIn)(config);
             yield (0, estimate_1.updateEstimates)(config);
+            core.info(`Updated ${jiraUrl}/projects/`);
         }
         catch (error) {
             if (error instanceof Error)

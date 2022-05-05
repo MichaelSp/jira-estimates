@@ -2,6 +2,16 @@ import * as core from '@actions/core'
 import {AutoLink, EstimateContext, Issue, LabelInterface} from './types'
 import {GitHub} from '@actions/github/lib/utils'
 import * as github from '@actions/github'
+import JiraApi from 'jira-client'
+
+export function getGithubClient(): InstanceType<typeof GitHub> {
+  const token = process.env['GITHUB_TOKEN']
+  if (!token) {
+    throw new Error('GITHUB_TOKEN is required!')
+  }
+
+  return github.getOctokit(token)
+}
 
 export async function loadGHIssue(ctx: EstimateContext): Promise<Issue> {
   const issue = await ctx.octokit.rest.issues.get({
@@ -13,6 +23,7 @@ export async function loadGHIssue(ctx: EstimateContext): Promise<Issue> {
 }
 
 export async function loadEstimate(context: EstimateContext): Promise<number> {
+  let estimate = 0
   if (context.ghIssue) {
     core.debug(
       `Loaded GH issue ${
@@ -24,10 +35,18 @@ export async function loadEstimate(context: EstimateContext): Promise<number> {
       typeof context.ghIssue.data.labels == 'string'
         ? [{name: context.ghIssue.data.labels}]
         : context.ghIssue.data.labels || []
-    return Number.parseInt(
+    estimate = Number.parseInt(
       labels.find(label => label.name?.match(/\d+/))?.name || '0'
     )
-  } else return 0
+  } else {
+    estimate = 0
+  }
+  if (estimate === 0) {
+    core.warning(
+      'No estimate label found or estimation is "0". Only labels with just one number (\\d+) > 0 are considered estimates.'
+    )
+  }
+  return estimate
 }
 
 export async function findIssueKeyIn(
@@ -69,7 +88,9 @@ export async function loadAutolinks(
   }
 }
 
-export async function updateEstimates(config: EstimateContext): Promise<void> {
+export async function updateEstimates(
+  config: EstimateContext
+): Promise<JiraApi.JsonResponse | void> {
   if (!config.string || config.string === '') {
     core.setFailed(
       'Neither "string" is defined nor issue comment could be determined.'
@@ -81,8 +102,8 @@ export async function updateEstimates(config: EstimateContext): Promise<void> {
     return
   }
 
-  core.info(`Updating issue ${config.jiraIssue} on ${config.jira}`)
-  await config.jira.updateIssue(config.jiraIssue, {
+  core.info(`Updating issue ${config.jiraIssue}`)
+  const response = await config.jira.updateIssue(config.jiraIssue, {
     update: {
       update: {
         'Story Points': [
@@ -93,4 +114,5 @@ export async function updateEstimates(config: EstimateContext): Promise<void> {
       }
     }
   })
+  return response
 }

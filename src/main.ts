@@ -63,11 +63,6 @@ async function run(): Promise<void> {
     }
     core.debug(`Using estimate '${config.estimate}'`)
 
-    if (!config.jiraIssue) {
-      core.info(`String does not contain issueKeys`)
-      return
-    }
-
     if (!config.string || config.string === '') {
       config.string = config.ghIssue.data.body || ''
     }

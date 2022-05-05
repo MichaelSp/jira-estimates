@@ -3,6 +3,25 @@ import * as github from '@actions/github'
 import JiraApi from 'jira-client'
 import {loadEstimate, loadIssue, updateEstimates} from './estimate'
 import {AutoLink} from './types'
+import {GitHub} from '@actions/github/lib/utils'
+
+async function loadAutolinks(
+  octokit: InstanceType<typeof GitHub>
+): Promise<AutoLink[]> {
+  try {
+    const autolinks: AutoLink[] = (
+      await octokit.rest.repos.listAutolinks({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo
+      })
+    ).data
+    core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)
+    return autolinks
+  } catch {
+    core.warning('Unable to load autolinks')
+    return []
+  }
+}
 
 async function run(): Promise<void> {
   try {
@@ -29,7 +48,7 @@ async function run(): Promise<void> {
 
     const issue = await loadIssue(octokit, github.context)
     core.debug(
-      `Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(
+      `Loaded GH issue ${issue.data.body}\n\n with labels: ${JSON.stringify(
         issue.data.labels
       )}`
     )
@@ -41,13 +60,6 @@ async function run(): Promise<void> {
       return
     }
     core.debug(`Using estimate '${estimate}'`)
-    const autolinks: AutoLink[] = (
-      await octokit.rest.repos.listAutolinks({
-        owner: github.context.repo.owner,
-        repo: github.context.repo.repo
-      })
-    ).data
-    core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)
 
     const jiraConfig: JiraApi.JiraApiOptions = {
       protocol: jiraUrl.protocol,
@@ -64,12 +76,12 @@ async function run(): Promise<void> {
       )
       return
     }
-    core.debug(`Jira config: ${jiraConfig}`)
+    core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`)
     await updateEstimates({
       jira: new JiraApi({...jiraConfig, password: jiraPassword}),
       string,
       estimate,
-      autolinks
+      autolinks: await loadAutolinks(octokit)
     })
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)

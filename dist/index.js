@@ -150,6 +150,22 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const jira_client_1 = __importDefault(__nccwpck_require__(6411));
 const estimate_1 = __nccwpck_require__(4115);
+function loadAutolinks(octokit) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const autolinks = (yield octokit.rest.repos.listAutolinks({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo
+            })).data;
+            core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`);
+            return autolinks;
+        }
+        catch (_a) {
+            core.warning('Unable to load autolinks');
+            return [];
+        }
+    });
+}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -172,18 +188,13 @@ function run() {
             const jiraUsername = core.getInput('jira-password');
             let string = core.getInput('string');
             const issue = yield (0, estimate_1.loadIssue)(octokit, github.context);
-            core.debug(`Loaded GH issue ${issue.data.body} with labels: ${JSON.stringify(issue.data.labels)}`);
+            core.debug(`Loaded GH issue ${issue.data.body}\n\n with labels: ${JSON.stringify(issue.data.labels)}`);
             const estimate = yield (0, estimate_1.loadEstimate)(issue);
             if (estimate === 0) {
                 core.warning('No estimate label found. Only labels with just one number (\\d+) are considered estimates.');
                 return;
             }
             core.debug(`Using estimate '${estimate}'`);
-            const autolinks = (yield octokit.rest.repos.listAutolinks({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo
-            })).data;
-            core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`);
             const jiraConfig = {
                 protocol: jiraUrl.protocol,
                 host: jiraUrl.host,
@@ -197,12 +208,12 @@ function run() {
                 core.setFailed('Neither "string" is defined nor issue comment could be determined.');
                 return;
             }
-            core.debug(`Jira config: ${jiraConfig}`);
+            core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`);
             yield (0, estimate_1.updateEstimates)({
                 jira: new jira_client_1.default(Object.assign(Object.assign({}, jiraConfig), { password: jiraPassword })),
                 string,
                 estimate,
-                autolinks
+                autolinks: yield loadAutolinks(octokit)
             });
         }
         catch (error) {

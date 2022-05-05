@@ -31,7 +31,7 @@ async function run(): Promise<void> {
     const jiraUrl = new URL(core.getInput('jira-url'))
     const jiraPassword = core.getInput('jira-username')
     const jiraUsername = core.getInput('jira-password')
-    const jiraProjectPrefix = core.getInput('jira-project-prefix')
+    const jiraProjectRegexPattern = core.getInput('jira-project-regex-pattern')
     const useAutoLinks = core.getInput('use-gh-autolinks')
 
     const jiraConfig: JiraApi.JiraApiOptions = {
@@ -49,7 +49,7 @@ async function run(): Promise<void> {
       jira: new JiraApi({...jiraConfig, password: jiraPassword}),
       string: core.getInput('string'),
       autoLinks: useAutoLinks ? await loadAutolinks(octokit) : [],
-      jiraProjectPrefix
+      jiraProjectRegexPattern
     }
     core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`)
 

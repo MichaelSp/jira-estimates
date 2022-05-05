@@ -31,7 +31,7 @@ export interface EstimateContext {
   jira: JiraApi
   string: string
   autoLinks: AutoLink[]
-  jiraProjectPrefix: string
+  jiraProjectRegexPattern: string
   jiraIssue?: string
   ghIssue?: Issue
   estimate?: number

@@ -33,16 +33,16 @@ export async function loadEstimate(context: EstimateContext): Promise<number> {
 export async function findIssueKeyIn(
   config: EstimateContext
 ): Promise<string | undefined> {
-  const searchPatterns = config.autoLinks.map(
-    autolink => new RegExp(`${autolink.key_prefix}\\d+`)
+  const searchPatterns: string[] = config.autoLinks.map(
+    autolink => `${autolink.key_prefix}\\d+`
   )
 
-  if (config.jiraProjectPrefix && config.jiraProjectPrefix !== '') {
-    searchPatterns.push(new RegExp(config.jiraProjectPrefix))
+  if (config.jiraProjectRegexPattern && config.jiraProjectRegexPattern !== '') {
+    searchPatterns.push(config.jiraProjectRegexPattern)
   }
-  core.debug(`searching for ${JSON.stringify(searchPatterns)}`)
+  core.debug(`Searching for ${JSON.stringify(searchPatterns)}`)
   for (const pattern of searchPatterns) {
-    const match = config.string.match(pattern)
+    const match = config.string.match(new RegExp(pattern))
     if (match) {
       core.debug(`found ${match[0]}`)
       return match[0]

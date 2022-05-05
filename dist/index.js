@@ -70,13 +70,13 @@ function loadEstimate(context) {
 exports.loadEstimate = loadEstimate;
 function findIssueKeyIn(config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const searchPatterns = config.autoLinks.map(autolink => new RegExp(`${autolink.key_prefix}\\d+`));
-        if (config.jiraProjectPrefix && config.jiraProjectPrefix !== '') {
-            searchPatterns.push(new RegExp(config.jiraProjectPrefix));
+        const searchPatterns = config.autoLinks.map(autolink => `${autolink.key_prefix}\\d+`);
+        if (config.jiraProjectRegexPattern && config.jiraProjectRegexPattern !== '') {
+            searchPatterns.push(config.jiraProjectRegexPattern);
         }
-        core.debug(`searching for ${JSON.stringify(searchPatterns)}`);
+        core.debug(`Searching for ${JSON.stringify(searchPatterns)}`);
         for (const pattern of searchPatterns) {
-            const match = config.string.match(pattern);
+            const match = config.string.match(new RegExp(pattern));
             if (match) {
                 core.debug(`found ${match[0]}`);
                 return match[0];
@@ -197,7 +197,7 @@ function run() {
             const jiraUrl = new URL(core.getInput('jira-url'));
             const jiraPassword = core.getInput('jira-username');
             const jiraUsername = core.getInput('jira-password');
-            const jiraProjectPrefix = core.getInput('jira-project-prefix');
+            const jiraProjectRegexPattern = core.getInput('jira-project-regex-pattern');
             const useAutoLinks = core.getInput('use-gh-autolinks');
             const jiraConfig = {
                 protocol: jiraUrl.protocol,
@@ -213,7 +213,7 @@ function run() {
                 jira: new jira_client_1.default(Object.assign(Object.assign({}, jiraConfig), { password: jiraPassword })),
                 string: core.getInput('string'),
                 autoLinks: useAutoLinks ? yield (0, estimate_1.loadAutolinks)(octokit) : [],
-                jiraProjectPrefix
+                jiraProjectRegexPattern
             };
             core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`);
             config.ghIssue = yield (0, estimate_1.loadGHIssue)(config);

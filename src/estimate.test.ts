@@ -16,7 +16,7 @@ describe('estimates', () => {
         autoLinks: autolinks.map(link => {
           return {key_prefix: link}
         }),
-        jiraProjectPrefix,
+        jiraProjectRegexPattern: jiraProjectPrefix,
         string
       } as EstimateContext
       expect(await findIssueKeyIn(ctx)).toBe(result)

@@ -15,7 +15,7 @@ inputs:
     description: "The string that will be searched for as an jira issue. If not defined the issue/PR comment will be searched for auto-links."
     required: false
   jira-project-prefix:
-    description: "RegExp to look for Jira issues in the string or issue comment. Example: 'JIRA-\d+' to match 'JIRA-123'. To disable set to ''"
+    description: "RegExp to look for Jira issues in the string or issue comment. Example: 'JIRA-\\d+' to match 'JIRA-123'. To disable set to ''"
     required: false
     default: "([a-zA-Z0-9]+-[0-9]+)"
   use-gh-autolinks:

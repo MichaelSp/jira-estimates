@@ -25,6 +25,6 @@ jobs:
         jira-url: ${{ secrets.JIRA_HOST }}
         jira-username: ${{ secrets.JIRA_USERNAME }}
         jira-password: ${{ secrets.JIRA_PASSWORD }}
-        jira-project-regex-pattern: HSOBRD-
+        jira-project-regex-pattern: HSOBRD-\d+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

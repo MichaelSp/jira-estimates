@@ -39,34 +39,41 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.updateEstimates = exports.findIssueKeyIn = exports.loadEstimate = exports.loadIssue = void 0;
+exports.updateEstimates = exports.loadAutolinks = exports.findIssueKeyIn = exports.loadEstimate = exports.loadGHIssue = void 0;
 const core = __importStar(__nccwpck_require__(2186));
-const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g;
-function loadIssue(octokit, context) {
+const github = __importStar(__nccwpck_require__(5438));
+function loadGHIssue(ctx) {
     return __awaiter(this, void 0, void 0, function* () {
-        const issue = yield octokit.rest.issues.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number
+        const issue = yield ctx.octokit.rest.issues.get({
+            owner: ctx.github.repo.owner,
+            repo: ctx.github.repo.repo,
+            issue_number: ctx.github.issue.number
         });
         return issue;
     });
 }
-exports.loadIssue = loadIssue;
-function loadEstimate(issue) {
+exports.loadGHIssue = loadGHIssue;
+function loadEstimate(context) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        const labels = typeof issue.data.labels == 'string'
-            ? [{ name: issue.data.labels }]
-            : issue.data.labels || [];
-        return Number.parseInt(((_a = labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.match(/\d+/); })) === null || _a === void 0 ? void 0 : _a.name) || '0');
+        if (context.ghIssue) {
+            core.debug(`Loaded GH issue ${context.ghIssue.data.body}\n\n with labels: ${JSON.stringify(context.ghIssue.data.labels)}`);
+            const labels = typeof context.ghIssue.data.labels == 'string'
+                ? [{ name: context.ghIssue.data.labels }]
+                : context.ghIssue.data.labels || [];
+            return Number.parseInt(((_a = labels.find(label => { var _a; return (_a = label.name) === null || _a === void 0 ? void 0 : _a.match(/\d+/); })) === null || _a === void 0 ? void 0 : _a.name) || '0');
+        }
+        else
+            return 0;
     });
 }
 exports.loadEstimate = loadEstimate;
 function findIssueKeyIn(config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const searchPatterns = config.autolinks.map(autolink => new RegExp(`${autolink.key_prefix}\\d+`));
-        searchPatterns.push(issueIdRegEx);
+        const searchPatterns = config.autoLinks.map(autolink => new RegExp(`${autolink.key_prefix}\\d+`));
+        if (config.jiraProjectPrefix && config.jiraProjectPrefix !== '') {
+            searchPatterns.push(new RegExp(config.jiraProjectPrefix));
+        }
         core.debug(`searching for ${JSON.stringify(searchPatterns)}`);
         for (const pattern of searchPatterns) {
             const match = config.string.match(pattern);
@@ -75,19 +82,39 @@ function findIssueKeyIn(config) {
                 return match[0];
             }
         }
-        return null;
+        return undefined;
     });
 }
 exports.findIssueKeyIn = findIssueKeyIn;
+function loadAutolinks(octokit) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const autolinks = (yield octokit.rest.repos.listAutolinks({
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo
+            })).data;
+            core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`);
+            return autolinks;
+        }
+        catch (_a) {
+            core.warning('Unable to load autolinks');
+            return [];
+        }
+    });
+}
+exports.loadAutolinks = loadAutolinks;
 function updateEstimates(config) {
     return __awaiter(this, void 0, void 0, function* () {
-        const jiraIssueString = yield findIssueKeyIn(config);
-        if (!jiraIssueString) {
-            core.info(`String does not contain issueKeys`);
+        if (!config.string || config.string === '') {
+            core.setFailed('Neither "string" is defined nor issue comment could be determined.');
             return;
         }
-        core.info(`Updating issue ${jiraIssueString} on ${config.jira}`);
-        yield config.jira.updateIssue(jiraIssueString, {
+        if (!config.jiraIssue || config.jiraIssue === '') {
+            core.setFailed("Jira issue couldn't be determined");
+            return;
+        }
+        core.info(`Updating issue ${config.jiraIssue} on ${config.jira}`);
+        yield config.jira.updateIssue(config.jiraIssue, {
             update: {
                 update: {
                     'Story Points': [
@@ -150,22 +177,6 @@ const core = __importStar(__nccwpck_require__(2186));
 const github = __importStar(__nccwpck_require__(5438));
 const jira_client_1 = __importDefault(__nccwpck_require__(6411));
 const estimate_1 = __nccwpck_require__(4115);
-function loadAutolinks(octokit) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const autolinks = (yield octokit.rest.repos.listAutolinks({
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo
-            })).data;
-            core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`);
-            return autolinks;
-        }
-        catch (_a) {
-            core.warning('Unable to load autolinks');
-            return [];
-        }
-    });
-}
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         try {
@@ -186,35 +197,41 @@ function run() {
             const jiraUrl = new URL(core.getInput('jira-url'));
             const jiraPassword = core.getInput('jira-username');
             const jiraUsername = core.getInput('jira-password');
-            let string = core.getInput('string');
-            const issue = yield (0, estimate_1.loadIssue)(octokit, github.context);
-            core.debug(`Loaded GH issue ${issue.data.body}\n\n with labels: ${JSON.stringify(issue.data.labels)}`);
-            const estimate = yield (0, estimate_1.loadEstimate)(issue);
-            if (estimate === 0) {
-                core.warning('No estimate label found. Only labels with just one number (\\d+) are considered estimates.');
-                return;
-            }
-            core.debug(`Using estimate '${estimate}'`);
+            const jiraProjectPrefix = core.getInput('jira-project-prefix');
+            const useAutoLinks = core.getInput('use-gh-autolinks');
             const jiraConfig = {
                 protocol: jiraUrl.protocol,
                 host: jiraUrl.host,
-                port: jiraUrl.port,
+                port: jiraUrl.port === '' ? undefined : jiraUrl.port,
                 username: jiraUsername,
                 apiVersion: '2',
                 strictSSL: true
             };
-            string = string || issue.data.body;
-            if (!string) {
-                core.setFailed('Neither "string" is defined nor issue comment could be determined.');
+            const config = {
+                octokit,
+                github: github.context,
+                jira: new jira_client_1.default(Object.assign(Object.assign({}, jiraConfig), { password: jiraPassword })),
+                string: core.getInput('string'),
+                autoLinks: useAutoLinks ? yield (0, estimate_1.loadAutolinks)(octokit) : [],
+                jiraProjectPrefix
+            };
+            core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`);
+            config.ghIssue = yield (0, estimate_1.loadGHIssue)(config);
+            config.estimate = yield (0, estimate_1.loadEstimate)(config);
+            if (config.estimate === 0) {
+                core.warning('No estimate label found or estimation is "0". Only labels with just one number (\\d+) > 0 are considered estimates.');
                 return;
             }
-            core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`);
-            yield (0, estimate_1.updateEstimates)({
-                jira: new jira_client_1.default(Object.assign(Object.assign({}, jiraConfig), { password: jiraPassword })),
-                string,
-                estimate,
-                autolinks: yield loadAutolinks(octokit)
-            });
+            core.debug(`Using estimate '${config.estimate}'`);
+            if (!config.jiraIssue) {
+                core.info(`String does not contain issueKeys`);
+                return;
+            }
+            if (!config.string || config.string === '') {
+                config.string = config.ghIssue.data.body || '';
+            }
+            config.jiraIssue = yield (0, estimate_1.findIssueKeyIn)(config);
+            yield (0, estimate_1.updateEstimates)(config);
         }
         catch (error) {
             if (error instanceof Error)

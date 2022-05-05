@@ -1,40 +1,45 @@
 import * as core from '@actions/core'
-import {EstimateContext, Issue, LabelInterface} from './types'
+import {AutoLink, EstimateContext, Issue, LabelInterface} from './types'
 import {GitHub} from '@actions/github/lib/utils'
-import * as Context from '@actions/github/lib/context'
+import * as github from '@actions/github'
 
-const issueIdRegEx = /([a-zA-Z0-9]+-[0-9]+)/g
-
-export async function loadIssue(
-  octokit: InstanceType<typeof GitHub>,
-  context: Context.Context
-): Promise<Issue> {
-  const issue = await octokit.rest.issues.get({
-    owner: context.repo.owner,
-    repo: context.repo.repo,
-    issue_number: context.issue.number
+export async function loadGHIssue(ctx: EstimateContext): Promise<Issue> {
+  const issue = await ctx.octokit.rest.issues.get({
+    owner: ctx.github.repo.owner,
+    repo: ctx.github.repo.repo,
+    issue_number: ctx.github.issue.number
   })
   return issue as Issue
 }
 
-export async function loadEstimate(issue: Issue): Promise<number> {
-  const labels: LabelInterface[] =
-    typeof issue.data.labels == 'string'
-      ? [{name: issue.data.labels}]
-      : issue.data.labels || []
-  return Number.parseInt(
-    labels.find(label => label.name?.match(/\d+/))?.name || '0'
-  )
+export async function loadEstimate(context: EstimateContext): Promise<number> {
+  if (context.ghIssue) {
+    core.debug(
+      `Loaded GH issue ${
+        context.ghIssue.data.body
+      }\n\n with labels: ${JSON.stringify(context.ghIssue.data.labels)}`
+    )
+
+    const labels: LabelInterface[] =
+      typeof context.ghIssue.data.labels == 'string'
+        ? [{name: context.ghIssue.data.labels}]
+        : context.ghIssue.data.labels || []
+    return Number.parseInt(
+      labels.find(label => label.name?.match(/\d+/))?.name || '0'
+    )
+  } else return 0
 }
 
 export async function findIssueKeyIn(
   config: EstimateContext
-): Promise<string | null> {
-  const searchPatterns = config.autolinks.map(
+): Promise<string | undefined> {
+  const searchPatterns = config.autoLinks.map(
     autolink => new RegExp(`${autolink.key_prefix}\\d+`)
   )
 
-  searchPatterns.push(issueIdRegEx)
+  if (config.jiraProjectPrefix && config.jiraProjectPrefix !== '') {
+    searchPatterns.push(new RegExp(config.jiraProjectPrefix))
+  }
   core.debug(`searching for ${JSON.stringify(searchPatterns)}`)
   for (const pattern of searchPatterns) {
     const match = config.string.match(pattern)
@@ -43,18 +48,41 @@ export async function findIssueKeyIn(
       return match[0]
     }
   }
-  return null
+  return undefined
+}
+
+export async function loadAutolinks(
+  octokit: InstanceType<typeof GitHub>
+): Promise<AutoLink[]> {
+  try {
+    const autolinks: AutoLink[] = (
+      await octokit.rest.repos.listAutolinks({
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo
+      })
+    ).data
+    core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)
+    return autolinks
+  } catch {
+    core.warning('Unable to load autolinks')
+    return []
+  }
 }
 
 export async function updateEstimates(config: EstimateContext): Promise<void> {
-  const jiraIssueString = await findIssueKeyIn(config)
-  if (!jiraIssueString) {
-    core.info(`String does not contain issueKeys`)
+  if (!config.string || config.string === '') {
+    core.setFailed(
+      'Neither "string" is defined nor issue comment could be determined.'
+    )
+    return
+  }
+  if (!config.jiraIssue || config.jiraIssue === '') {
+    core.setFailed("Jira issue couldn't be determined")
     return
   }
 
-  core.info(`Updating issue ${jiraIssueString} on ${config.jira}`)
-  await config.jira.updateIssue(jiraIssueString, {
+  core.info(`Updating issue ${config.jiraIssue} on ${config.jira}`)
+  await config.jira.updateIssue(config.jiraIssue, {
     update: {
       update: {
         'Story Points': [

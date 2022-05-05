@@ -1,4 +1,6 @@
 import JiraApi from 'jira-client'
+import {GitHub} from '@actions/github/lib/utils'
+import * as Context from '@actions/github/lib/context'
 
 export interface Issue {
   data: {
@@ -24,8 +26,13 @@ export interface AutoLink {
 }
 
 export interface EstimateContext {
+  octokit: InstanceType<typeof GitHub>
+  github: Context.Context
   jira: JiraApi
   string: string
-  estimate: number
-  autolinks: AutoLink[]
+  autoLinks: AutoLink[]
+  jiraProjectPrefix: string
+  jiraIssue?: string
+  ghIssue?: Issue
+  estimate?: number
 }

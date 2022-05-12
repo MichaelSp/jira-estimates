@@ -20,10 +20,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: MichaelSp/jira-estimates@test
+    - uses: MichaelSp/jira-estimates@main
       with:
         jira-url: ${{ secrets.JIRA_HOST }}
         jira-username: ${{ secrets.JIRA_USERNAME }}
         jira-password: ${{ secrets.JIRA_PASSWORD }}
+        jira-project-regex-pattern: HSOBRD-\d+
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

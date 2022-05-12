@@ -3,8 +3,8 @@ description: 'Manage estimates in jira using issue labels'
 author: 'Michael Sprauer'
 inputs:
   jira-url:
-    required: true
     description: 'URL to your jira instance. Example: https://jira.at.your.company'
+    required: true
   jira-username:
     description: "Username for jira access"
     required: true
@@ -12,8 +12,20 @@ inputs:
     description: "Password/Token for jira access"
     required: true
   string:
+    description: "The string that will be searched for as an jira issue. If not defined the issue/PR comment will be searched for auto-links."
     required: false
-    description: The string that will be searched for as an jira issue. If not defined the issue/PR comment will be searched for auto-links.
+  jira-project-regex-pattern:
+    description: "RegExp to look for Jira issues in the string or issue comment. Example: 'JIRA-\\d+' to match 'JIRA-123'. To disable set to ''"
+    required: false
+    default: "([a-zA-Z0-9]+-[0-9]+)"
+  use-gh-autolinks:
+    description: "Use the GitHub auto-links to look for jira issue references. That requires additional permission on the GITHUB_TOKEN."
+    required: false
+    default: "true"
+  custom-field-id:
+    description: "The story points or estimates usually have a custom field id"
+    required: false
+    default: "customfield_10013"
 runs:
   using: 'node16'
   main: 'dist/index.js'

@@ -33,6 +33,7 @@ export interface EstimateContext {
   autoLinks: AutoLink[]
   jiraProjectRegexPattern: string
   jiraIssue?: string
+  jiraCustomFieldId: string
   ghIssue?: Issue
   estimate?: number
 }

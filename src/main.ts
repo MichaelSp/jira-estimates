@@ -14,10 +14,11 @@ import {EstimateContext} from './types'
 async function run(): Promise<void> {
   try {
     const jiraUrl = new URL(core.getInput('jira-url'))
-    const jiraPassword = core.getInput('jira-username')
-    const jiraUsername = core.getInput('jira-password')
+    const jiraUsername = core.getInput('jira-username')
+    const jiraPassword = core.getInput('jira-password')
     const jiraProjectRegexPattern = core.getInput('jira-project-regex-pattern')
     const useAutoLinks = core.getInput('use-gh-autolinks')
+    const jiraCustomFieldId = core.getInput('custom-field-id')
 
     const jiraConfig: JiraApi.JiraApiOptions = {
       protocol: jiraUrl.protocol,
@@ -35,6 +36,7 @@ async function run(): Promise<void> {
       jira: new JiraApi({...jiraConfig, password: jiraPassword}),
       string: core.getInput('string'),
       autoLinks: useAutoLinks ? await loadAutolinks(octokit) : [],
+      jiraCustomFieldId,
       jiraProjectRegexPattern
     }
     core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`)

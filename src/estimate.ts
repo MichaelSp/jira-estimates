@@ -105,13 +105,11 @@ export async function updateEstimates(
   core.info(`Updating issue ${config.jiraIssue}`)
   const response = await config.jira.updateIssue(config.jiraIssue, {
     update: {
-      update: {
-        'Story Points': [
-          {
-            set: config.estimate
-          }
-        ]
-      }
+      [config.jiraCustomFieldId]: [
+        {
+          set: config.estimate
+        }
+      ]
     }
   })
   return response

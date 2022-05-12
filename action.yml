@@ -22,6 +22,10 @@ inputs:
     description: "Use the GitHub auto-links to look for jira issue references. That requires additional permission on the GITHUB_TOKEN."
     required: false
     default: "true"
+  custom-field-id:
+    description: "The story points or estimates usually have a custom field id"
+    required: false
+    default: "customfield_10013"
 runs:
   using: 'node16'
   main: 'dist/index.js'

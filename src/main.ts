@@ -50,7 +50,7 @@ async function run(): Promise<void> {
     }
     config.jiraIssue = await findIssueKeyIn(config)
     await updateEstimates(config)
-    core.info(`Updated ${jiraUrl}/projects/`)
+    core.info(`Updated ${jiraUrl}/browse/${config.jiraIssue}`)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

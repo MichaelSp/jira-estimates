@@ -101,6 +101,10 @@ export async function updateEstimates(
     core.setFailed("Jira issue couldn't be determined")
     return
   }
+  if (!config.estimate || config.estimate === 0) {
+    core.warning('Estimate is either null or 0. Will not update the issue.')
+    return
+  }
 
   core.info(`Updating issue ${config.jiraIssue}`)
   const response = await config.jira.updateIssue(config.jiraIssue, {

@@ -9,6 +9,8 @@ on:
     - unlabeled
 
   pull_request:
+    branches:
+    - test
     types:
     - labeled
     - unlabeled
@@ -20,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: MichaelSp/jira-estimates@main
+    - uses: MichaelSp/jira-estimates@test
       with:
         jira-url: ${{ secrets.JIRA_HOST }}
         jira-username: ${{ secrets.JIRA_USERNAME }}

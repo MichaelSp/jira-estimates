@@ -124,7 +124,7 @@ function updateEstimates(config) {
             return;
         }
         if (!config.jiraIssue || config.jiraIssue === '') {
-            core.setFailed("Jira issue couldn't be determined");
+            core.warning("Jira issue couldn't be determined");
             return;
         }
         if (!config.estimate || config.estimate === 0) {

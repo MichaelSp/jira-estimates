@@ -83,7 +83,9 @@ export async function loadAutolinks(
     core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)
     return autolinks
   } catch {
-    core.warning('Unable to load autolinks')
+    core.warning(
+      'Unable to load autolinks. Please check permission of the GITHUB_TOKEN.'
+    )
     return []
   }
 }

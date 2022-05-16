@@ -111,7 +111,7 @@ function loadAutolinks(octokit) {
             return autolinks;
         }
         catch (_a) {
-            core.warning('Unable to load autolinks');
+            core.warning('Unable to load autolinks. Please check permission of the GITHUB_TOKEN.');
             return [];
         }
     });
@@ -224,13 +224,13 @@ function run() {
             core.debug(`Jira config: ${JSON.stringify(jiraConfig)}`);
             config.ghIssue = yield (0, estimate_1.loadGHIssue)(config);
             config.estimate = yield (0, estimate_1.loadEstimate)(config);
-            core.debug(`Using estimate '${config.estimate}'`);
+            core.info(`Using estimate '${config.estimate}'`);
             if (!config.string || config.string === '') {
                 config.string = config.ghIssue.data.body || '';
             }
             config.jiraIssue = yield (0, estimate_1.findIssueKeyIn)(config);
             yield (0, estimate_1.updateEstimates)(config);
-            core.info(`Updated ${jiraUrl}/browse/${config.jiraIssue}`);
+            core.info(`Updated ${jiraUrl}browse/${config.jiraIssue}`);
         }
         catch (error) {
             if (error instanceof Error)

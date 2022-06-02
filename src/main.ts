@@ -43,14 +43,14 @@ async function run(): Promise<void> {
 
     config.ghIssue = await loadGHIssue(config)
     config.estimate = await loadEstimate(config)
-    core.debug(`Using estimate '${config.estimate}'`)
+    core.info(`Using estimate '${config.estimate}'`)
 
     if (!config.string || config.string === '') {
       config.string = config.ghIssue.data.body || ''
     }
     config.jiraIssue = await findIssueKeyIn(config)
     await updateEstimates(config)
-    core.info(`Updated ${jiraUrl}/browse/${config.jiraIssue}`)
+    core.info(`Updated ${jiraUrl}browse/${config.jiraIssue}`)
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

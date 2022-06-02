@@ -83,7 +83,9 @@ export async function loadAutolinks(
     core.debug(`Using autolink config: ${JSON.stringify(autolinks)}`)
     return autolinks
   } catch {
-    core.warning('Unable to load autolinks')
+    core.warning(
+      'Unable to load autolinks. Please check permission of the GITHUB_TOKEN.'
+    )
     return []
   }
 }
@@ -98,7 +100,7 @@ export async function updateEstimates(
     return
   }
   if (!config.jiraIssue || config.jiraIssue === '') {
-    core.setFailed("Jira issue couldn't be determined")
+    core.warning("Jira issue couldn't be determined")
     return
   }
   if (!config.estimate || config.estimate === 0) {

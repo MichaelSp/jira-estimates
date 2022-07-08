@@ -33,7 +33,7 @@
     "jira-client": "8.1.0"
   },
   "devDependencies": {
-    "@octokit/core": "3.6.0",
+    "@octokit/core": "4.0.2",
     "@octokit/plugin-rest-endpoint-methods": "5.16.2",
     "@types/jest": "28.1.4",
     "@types/jira-client": "7.1.4",

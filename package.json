@@ -35,7 +35,7 @@
   "devDependencies": {
     "@octokit/core": "4.0.4",
     "@octokit/plugin-rest-endpoint-methods": "6.2.0",
-    "@types/jest": "28.1.6",
+    "@types/jest": "28.1.7",
     "@types/jira-client": "7.1.4",
     "@types/node": "18.7.3",
     "@typescript-eslint/parser": "5.33.0",

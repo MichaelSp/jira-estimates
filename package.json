@@ -37,7 +37,7 @@
     "@octokit/plugin-rest-endpoint-methods": "6.6.2",
     "@types/jest": "28.1.8",
     "@types/jira-client": "7.1.4",
-    "@types/node": "18.7.21",
+    "@types/node": "18.7.23",
     "@typescript-eslint/parser": "5.38.1",
     "@vercel/ncc": "0.34.0",
     "eslint": "8.24.0",

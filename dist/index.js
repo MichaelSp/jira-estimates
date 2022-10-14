@@ -34299,17 +34299,23 @@ Object.defineProperty(exports, "__esModule", ({
 }));
 exports["default"] = void 0;
 
-var _postmanRequest = _interopRequireDefault(__nccwpck_require__(6501));
-
 var _url = _interopRequireDefault(__nccwpck_require__(7310));
+
+// Need to use require here for testing
+// eslint-disable-next-line no-underscore-dangle
+const _request = __nccwpck_require__(6501);
 
 function request(uri, options) {
   return new Promise((resolve, reject) => {
-    (0, _postmanRequest.default)(uri, options, (err, httpResponse) => {
+    _request(uri, options, (err, httpResponse) => {
       if (err) {
         reject(err);
       } else {
-        // for compatibility with request-promise
+        if (httpResponse.statusCode >= 400) {
+          reject(httpResponse.body);
+        } // for compatibility with request-promise
+
+
         resolve(httpResponse.body);
       }
     });
@@ -34618,15 +34624,20 @@ class JiraApi {
     const options = { ...this.baseOptions,
       ...requestOptions
     };
-    const response = await this.request(options);
 
-    if (response) {
-      if (Array.isArray(response.errorMessages) && response.errorMessages.length > 0) {
-        throw new Error(response.errorMessages.join(', '));
+    try {
+      const response = await this.request(options);
+
+      if (response) {
+        if (Array.isArray(response.errorMessages) && response.errorMessages.length > 0) {
+          throw new Error(response.errorMessages.join(', '));
+        }
       }
-    }
 
-    return response;
+      return response;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
   /**
    * @name findIssue
@@ -35753,6 +35764,25 @@ class JiraApi {
       pathname: `/issue/${issueId}/worklog/${worklogId}`
     }), {
       method: 'DELETE',
+      followAllRedirects: true
+    }));
+  }
+  /** Update worklog from issue
+   * [Jira Doc](https://developer.atlassian.com/cloud/jira/platform/rest/v2/api-group-issue-worklogs/#api-rest-api-2-issue-issueidorkey-worklog-id-put)
+   * @name updateWorklog
+   * @function
+   * @param {string} issueId - the Id of the issue to update
+   * @param {string} worklogId - the Id of the worklog in issue to update
+   * @param {string} body - value to set
+   */
+
+
+  updateWorklog(issueId, worklogId, body) {
+    return this.doRequest(this.makeRequestHeader(this.makeUri({
+      pathname: `/issue/${issueId}/worklog/${worklogId}`
+    }), {
+      method: 'PUT',
+      body,
       followAllRedirects: true
     }));
   }

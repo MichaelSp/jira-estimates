@@ -36,7 +36,7 @@
     "@octokit/core": "4.1.0",
     "@octokit/plugin-rest-endpoint-methods": "6.7.0",
     "@types/jest": "28.1.8",
-    "@types/jira-client": "7.1.4",
+    "@types/jira-client": "7.1.5",
     "@types/node": "18.11.9",
     "@typescript-eslint/parser": "5.42.1",
     "@vercel/ncc": "0.34.0",

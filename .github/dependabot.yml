@@ -4,8 +4,15 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    groups:
+      actions:
+        update-types: 
+        - major
+        - minor
+        - patch
 
   - package-ecosystem: npm
     directory: /
     schedule:
       interval: weekly
+  

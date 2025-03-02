@@ -3,6 +3,7 @@ import {AutoLink, EstimateContext, Issue, LabelInterface} from './types'
 import {GitHub} from '@actions/github/lib/utils'
 import * as github from '@actions/github'
 import JiraApi from 'jira-client'
+import * as _ from 'lodash'
 
 export function getGithubClient(): InstanceType<typeof GitHub> {
   const token = process.env['GITHUB_TOKEN']
@@ -57,7 +58,8 @@ export async function findIssueKeyIn(
   )
 
   if (config.jiraProjectRegexPattern && config.jiraProjectRegexPattern !== '') {
-    searchPatterns.push(config.jiraProjectRegexPattern)
+    const safePattern = _.escapeRegExp(config.jiraProjectRegexPattern)
+    searchPatterns.push(safePattern)
   }
   core.debug(`Searching for ${JSON.stringify(searchPatterns)}`)
   for (const pattern of searchPatterns) {

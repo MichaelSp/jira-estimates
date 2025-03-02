@@ -39,6 +39,7 @@
     "@octokit/plugin-rest-endpoint-methods": "13.3.1",
     "@types/jest": "29.5.14",
     "@types/jira-client": "7.1.9",
+    "@types/lodash": "^4.17.16",
     "@types/node": "22.13.1",
     "@vercel/ncc": "0.38.3",
     "eslint": "^9.20.0",

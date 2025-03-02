@@ -20,6 +20,8 @@ on:
 jobs:
   sync-estimates:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
     - uses: MichaelSp/jira-estimates@test

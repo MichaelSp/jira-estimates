@@ -38,7 +38,7 @@
     "@octokit/plugin-rest-endpoint-methods": "13.5.0",
     "@types/jest": "29.5.14",
     "@types/jira-client": "7.1.9",
-    "@types/node": "22.13.12",
+    "@types/node": "22.13.14",
     "@vercel/ncc": "0.38.3",
     "eslint": "^9.23.0",
     "globals": "^16.0.0",
@@ -47,6 +47,6 @@
     "prettier": "3.5.3",
     "ts-jest": "29.3.0",
     "typescript": "5.8.2",
-    "typescript-eslint": "^8.27.0"
+    "typescript-eslint": "^8.28.0"
   }
 }

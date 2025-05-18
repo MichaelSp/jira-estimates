@@ -34,7 +34,8 @@ if [ "$1" == "" ]; then
     exit 1
   fi
   SELECTED_PR=$((SELECTED_PR - 1))
-  PR_NUMBER=$(echo "$DATA" | sed -n "${SELECTED_PR}p" | awk '{print $1}')
+  PR_NUMBER=$(echo "$DATA" | sed -n "$((SELECTED_PR + 1))p" | awk '{print $1}')
+  echo -e "${GREEN}Selected PR $PR_NUMBER${NC} - $(echo "$DATA" | sed -n "$((SELECTED_PR + 1))p" | cut -d' ' -f2-)${NC}"
 fi
 
 if [ "$PR_NUMBER" != "" ]; then

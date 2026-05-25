@@ -11,9 +11,14 @@ describe('estimates', () => {
     [[], 'abc-\\d+', 'abc-21', 'abc-21']
   ])(
     `finds issue in string: %s,"%s"`,
-    async (autolinks, jiraProjectPrefix, string, result) => {
+    async (
+      autolinks: string[],
+      jiraProjectPrefix: string,
+      string: string,
+      result: string | undefined
+    ) => {
       const ctx: EstimateContext = {
-        autoLinks: autolinks.map(link => {
+        autoLinks: autolinks.map((link: string) => {
           return {key_prefix: link}
         }),
         jiraProjectRegexPattern: jiraProjectPrefix,

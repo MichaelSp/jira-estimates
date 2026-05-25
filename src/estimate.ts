@@ -23,7 +23,7 @@ export async function loadGHIssue(ctx: EstimateContext): Promise<Issue> {
 }
 
 export async function loadEstimate(context: EstimateContext): Promise<number> {
-  let estimate = 0
+  let estimate
   if (context.ghIssue) {
     core.debug(
       `Loaded GH issue ${

@@ -38,15 +38,15 @@
     "@octokit/plugin-rest-endpoint-methods": "17.0.0",
     "@types/jest": "30.0.0",
     "@types/jira-client": "7.1.9",
-    "@types/node": "25.6.2",
+    "@types/node": "25.9.1",
     "@vercel/ncc": "0.38.4",
-    "eslint": "^10.3.0",
+    "eslint": "^10.4.1",
     "globals": "^17.6.0",
     "jest": "30.4.2",
-    "js-yaml": "4.1.1",
+    "js-yaml": "4.2.0",
     "prettier": "3.8.3",
-    "ts-jest": "29.4.9",
+    "ts-jest": "29.4.11",
     "typescript": "6.0.3",
-    "typescript-eslint": "^8.59.2"
+    "typescript-eslint": "^8.60.1"
   }
 }
